@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import webbrowser
+import ConfigParser
 from requests_oauthlib import OAuth1Session
 
 REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
@@ -22,9 +22,8 @@ ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
 AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 SIGNIN_URL = 'https://api.twitter.com/oauth/authenticate'
 
-
 def get_access_token(consumer_key, consumer_secret):
-    oauth_client = OAuth1Session(consumer_key, client_secret=consumer_secret)
+    oauth_client = OAuth1Session(consumer_key, client_secret=consumer_secret, callback_uri='oob')
 
     print 'Requesting temp token from Twitter'
 
@@ -57,18 +56,40 @@ def get_access_token(consumer_key, consumer_secret):
         resp = oauth_client.fetch_access_token(ACCESS_TOKEN_URL)
     except ValueError, e:
         print 'Invalid respond from Twitter requesting access token: %s' % e
-        return
+        return None
 
     print 'Your Twitter Access Token key: %s' % resp.get('oauth_token')
     print '          Access Token secret: %s' % resp.get('oauth_token_secret')
     print ''
+    return (resp.get('oauth_token'), resp.get('oauth_token_secret'))
 
 
 def main():
-    consumer_key = raw_input('Enter your consumer key: ')
-    consumer_secret = raw_input("Enter your consumer secret: ")
-    get_access_token(consumer_key, consumer_secret)
+    cf = 'parliament.ini'
+    config = ConfigParser.ConfigParser()
+    config.readfp(open(cf))
 
+    consumer_key = config.get('OAUTH', 'consumer_key')
+    consumer_secret = config.get('OAUTH', 'consumer_secret')
+
+    (key, secret) = get_access_token(consumer_key, consumer_secret)
+
+    if key is not None:
+        import tweepy
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret, secure=True)
+        auth.set_access_token(key, secret)
+
+	api = tweepy.API(auth)
+        account = api.me().screen_name
+        users = config.get('ACCOUNTS', 'users') + " " + account
+        config.set('ACCOUNTS', 'users', users)
+        config.add_section(account)
+        config.set(account, 'key', key)
+        config.set(account, 'secret', secret)
+
+        with open(cf, 'wb') as configfile:
+            config.write(configfile)
+        print 'Access Tokens for %s added to configuration file "%s"' % (account, cf)
 
 if __name__ == "__main__":
     main()
