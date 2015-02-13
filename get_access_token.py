@@ -69,8 +69,8 @@ def main():
     config = ConfigParser.ConfigParser()
     config.readfp(open(cf))
 
-    consumer_key = config.get('OAUTH', 'consumer_key')
-    consumer_secret = config.get('OAUTH', 'consumer_secret')
+    consumer_key = config.get('General', 'consumer_key')
+    consumer_secret = config.get('General', 'consumer_secret')
 
     (key, secret) = get_access_token(consumer_key, consumer_secret)
 
@@ -81,8 +81,8 @@ def main():
 
 	api = tweepy.API(auth)
         account = api.me().screen_name
-        users = config.get('ACCOUNTS', 'users') + " " + account
-        config.set('ACCOUNTS', 'users', users)
+        users = config.get('General', 'users') + " " + account
+        config.set('General', 'users', users)
         config.add_section(account)
         config.set(account, 'key', key)
         config.set(account, 'secret', secret)
