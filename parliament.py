@@ -3,7 +3,7 @@
 import tweepy
 from tweepy.streaming import Stream, StreamListener
 #from pysqlite2 import dbapi2 as sqlite
-#import anyjson
+import anyjson
 
 import ConfigParser
 import os
@@ -15,8 +15,15 @@ class StreamPrinter(StreamListener):
 		self.outfd = open('parliament_log.' + time.strftime('%Y%m%d-%H%M%S') + '.json', 'a')
 
 	def on_data(self, data):
-		self.outfd.write(data + "\n")
-		print data
+		self.outfd.write(data)
+		try:
+			t = anyjson.deserialize(data)
+			print "[%s] %s >> %s" % (
+				t['created_at'],
+				t['user']['screen_name'],
+				t['text'].encode('utf-8') )
+		except ValueError:
+			pass
 		return True
 
 	def on_error(self, status):
