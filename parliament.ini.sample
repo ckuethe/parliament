@@ -1,13 +1,8 @@
-; get a twitter API key
-; you'll need to authorize when you generate authorization tokens with
-; https://raw.githubusercontent.com/bear/python-twitter/master/get_access_token.py
-[OAUTH]
+[General]
 consumer_key=xxxxxxxxxxxxx
 consumer_secret=yyyyyyyyyyyyy
-
-; list the accounts you want to monitor
-[ACCOUNTS]
-users=alice,bob,carol,dave
+users=alice,bob,carol
+keywords=foo bar baz quux mumble
 
 ; one section per account
 [alice]
