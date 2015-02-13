@@ -1,3 +1,4 @@
 .*.sw[opq]
+*.json
 parliament.ini
 api_keys
