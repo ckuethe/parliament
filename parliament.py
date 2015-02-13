@@ -4,8 +4,9 @@ import tweepy
 from tweepy.streaming import Stream, StreamListener
 #from pysqlite2 import dbapi2 as sqlite
 import anyjson
-
+from HTMLParser import HTMLParser
 import ConfigParser
+import re
 import os
 import sys
 import time
@@ -13,15 +14,14 @@ import time
 class StreamPrinter(StreamListener):
 	def __init__(self):
 		self.outfd = open('parliament_log.' + time.strftime('%Y%m%d-%H%M%S') + '.json', 'a')
+		self.hp = HTMLParser()
 
 	def on_data(self, data):
 		self.outfd.write(data)
 		try:
 			t = anyjson.deserialize(data)
-			print "[%s] %s >> %s" % (
-				t['created_at'],
-				t['user']['screen_name'],
-				t['text'].encode('utf-8') )
+			txt = re.sub(r'[^\x00-\x7f]',r'_', self.hp.unescape(t['text'].encode('ascii')))
+			print "[%s] %s >> %s" % ( t['created_at'], t['user']['screen_name'], txt )
 		except ValueError:
 			pass
 		return True
