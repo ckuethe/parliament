@@ -10,6 +10,7 @@ import re
 import os
 import sys
 import time
+from unicodedata import normalize
 
 class StreamPrinter(StreamListener):
 	def __init__(self):
@@ -20,7 +21,7 @@ class StreamPrinter(StreamListener):
 		self.outfd.write(data)
 		try:
 			t = anyjson.deserialize(data)
-			txt = re.sub(r'[^\x00-\x7f]',r'_', self.hp.unescape(t['text'].encode('ascii')))
+			txt = self.hp.unescape( normalize('NFKD', t['text'].decode('utf-8')).encode('ascii','ignore') )
 			print "[%s] %s >> %s" % ( t['created_at'], t['user']['screen_name'], txt )
 		except ValueError:
 			pass
