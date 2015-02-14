@@ -26,7 +26,7 @@ class StreamPrinter(StreamListener):
 			t = anyjson.deserialize(data)
 			txt = sanitize(t['text'])
 			print "[%s] %s >> %s" % ( t['created_at'], t['user']['screen_name'], txt )
-		except ValueError:
+		except KeyError,ValueError:
 			pass
 		return True
 
