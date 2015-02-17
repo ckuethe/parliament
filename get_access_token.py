@@ -76,7 +76,7 @@ def main():
 
     if key is not None:
         import tweepy
-        auth = tweepy.OAuthHandler(consumer_key, consumer_secret, secure=True)
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(key, secret)
 
 	api = tweepy.API(auth)
