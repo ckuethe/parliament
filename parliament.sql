@@ -16,6 +16,7 @@ CREATE TABLE `tweets` (
 	`id`	INTEGER UNIQUE ON CONFLICT IGNORE NOT NULL,
 	`timestamp`	INTEGER NOT NULL,
 	`user_id`	INTEGER NOT NULL,
+	`src_account`	TEXT NOT NULL DEFAULT `.`,
 	`lang`	TEXT NOT NULL DEFAULT `en`,
 	`location`	TEXT,
 	`text`	TEXT NOT NULL,
