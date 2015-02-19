@@ -47,7 +47,7 @@ def tweetparse(user, db, tweet):
 		t_time = time.mktime(time_parser(tweet['created_at']).timetuple())
 	t_id = tweet['id']
 	t_lang = tweet['lang']
-	t_txt = hp.unescape( normalize('NFKD', u'%s' % tweet['text'] ).encode('ascii','ignore') )
+	t_txt = sanitize(tweet['text'] )
 
 	if len(tweet[u'entities'][u'urls']):
 		t_txt = urlfix(t_txt, tweet)
@@ -122,7 +122,6 @@ def stream_thread(user, config):
 	try:
 		twitterStream.userstream()
 	except:
-		twitterStream.listener.db.disconnect()
 		twitterStream.disconnect()
 		sys.exit(0)
 
