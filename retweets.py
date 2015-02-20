@@ -6,10 +6,6 @@ import re
 from HTMLParser import HTMLParser
 from unicodedata import normalize
 
-def raw_dot():
-	sys.stdout.write('.')
-	sys.stdout.flush()
-
 def sanitize(x):
 	hp = HTMLParser()
 	return hp.unescape( normalize('NFKD', u'%s' % x ).encode('ascii','ignore') )
