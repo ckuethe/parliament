@@ -1,4 +1,5 @@
 .*.sw[opq]
 *.json
-parliament.ini
+*.ini
+*.db
 api_keys
