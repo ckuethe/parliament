@@ -16,6 +16,10 @@ from HTMLParser import HTMLParser
 # used for timestamped logs
 starttime = time.strftime('%Y%m%d-%H%M%S')
 
+def tweettime2unix(x):
+	'''convert twitter's wacky timestamp into unix time'''
+	return time.mktime( time_parser(x).timetuple() )
+
 def sanitize(x):
 	'''convert fancy unicode to ascii'''
 	hp = HTMLParser()
@@ -44,7 +48,7 @@ def tweetparse(user, db, tweet):
 	if 'timestamp_ms' in tweet:
 		t_time = int(tweet['timestamp_ms']) / 1000.0
 	else:
-		t_time = time.mktime(time_parser(tweet['created_at']).timetuple())
+		t_time = tweettime2unix(tweet['created_at'])
 	t_id = tweet['id']
 	t_lang = tweet['lang']
 	t_txt = sanitize(tweet['text'] )
