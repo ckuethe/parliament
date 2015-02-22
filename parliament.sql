@@ -1,3 +1,7 @@
+-- TODO rename columns to make joins more easy to understand
+-- TODO make the tweets table support full text search
+-- TODO figure out what other columns need to be indexed
+
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE `users` (
@@ -22,6 +26,7 @@ CREATE TABLE `tweets` (
 	`text`	TEXT NOT NULL,
 	PRIMARY KEY(id)
 );
+
 CREATE UNIQUE INDEX `idx_unique_user` ON `users` (`id` ASC,`screen_name` ASC);
 CREATE INDEX `idx_unique_tweet` ON `tweets` (`id` ASC);
 CREATE INDEX `idx_tweets_by_user` ON `tweets` (`user_id` ASC);
