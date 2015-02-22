@@ -12,7 +12,7 @@ hp = HTMLParser()
 pp = pprint.PrettyPrinter()
 
 config = ConfigParser.ConfigParser()
-config.readfp(open('parliament.ini'))
+config.read('parliament.ini')
 db = sqlite3.connect(config.get('General', 'database'))
 
 def raw_dot():
