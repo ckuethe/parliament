@@ -1,7 +1,12 @@
 [firehose]
 
 ; sqlite database to write
+; unset it, leave it empty, or set to 'None' to not use the database
 database = firehose.db
+
+; unset, leav it empty, or set to 'None' to not write json log to disk
+; otherwise log to "${logbase}.${timestamp}.json"
+logbase = firehose_log
 
 ; which user to connect as, see named section below
 user = MyTwitterUser
