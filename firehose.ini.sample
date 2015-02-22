@@ -1,0 +1,18 @@
+[firehose]
+
+; sqlite database to write
+database = firehose.db
+
+; which user to connect as, see named section below
+user = MyTwitterUser
+
+; a set of terms to filter on
+keywords = @twitter @safety #twitter #trending ...
+
+; your API consumer key and secret
+consumer_key = XXXXXXXXXXXXXXXXXXXXX
+consumer_secret = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+[MyTwitterUser]
+access_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+access_secret = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
