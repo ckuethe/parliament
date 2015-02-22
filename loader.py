@@ -3,6 +3,7 @@
 import sys
 import pprint
 import re
+from dateutil.parser import parse as time_parser
 from HTMLParser import HTMLParser
 from unicodedata import normalize
 import ConfigParser
@@ -19,6 +20,10 @@ def raw_dot():
 	sys.stdout.write('.')
 	sys.stdout.flush()
 
+def tweettime2unix(x):
+	'''convert twitter's wacky timestamp into unix time'''
+	return time.mktime( time_parser(x).timetuple() )
+
 def sanitize(x):
 	return hp.unescape( normalize('NFKD', u'%s' % x ).encode('ascii','ignore') )
 
@@ -32,7 +37,11 @@ def tweetparse(tweet):
 	if 'created_at' not in tweet:
 		return
 
-	t_time = int(tweet['timestamp_ms']) / 1000.0
+	t_time = 0
+	if 'timestamp_ms' in tweet:
+		t_time = int(tweet['timestamp_ms']) / 1000.0
+	else:
+		t_time = tweettime2unix(tweet['created_at'])
 	t_id = tweet['id']
 	t_lang = tweet['lang']
 	t_txt = hp.unescape( normalize('NFKD', u'%s' % tweet['text'] ).encode('ascii','ignore') )
