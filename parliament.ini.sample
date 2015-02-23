@@ -1,9 +1,12 @@
-[General]
+[parliament]
 consumer_key=xxxxxxxxxxxxx
 consumer_secret=yyyyyyyyyyyyy
 database = parliament.db
 users=alice,bob,carol
 keywords=foo bar baz quux mumble
+; debugging
+;debug = True
+
 
 ; one section per account
 [alice]
