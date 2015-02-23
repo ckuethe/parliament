@@ -18,6 +18,9 @@ keywords = @twitter @safety #twitter #trending ...
 consumer_key = XXXXXXXXXXXXXXXXXXXXX
 consumer_secret = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+; debugging
+; debug = True
+
 [MyTwitterUser]
 access_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 access_secret = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
