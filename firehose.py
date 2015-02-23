@@ -46,9 +46,8 @@ def urlfix(body, tweet):
 
 def tweetparse(tweet, src_account='.', db=None):
 	if 'retweeted_status' in tweet:
-		tweetparse(tweet[u'retweeted_status'], src_account, db)
 		try:
-			pass
+			tweetparse(tweet[u'retweeted_status'], src_account, db)
 		except:
 			pass
 
