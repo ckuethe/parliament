@@ -10,9 +10,6 @@ import time
 from unicodedata import normalize
 from HTMLParser import HTMLParser
 
-# used for timestamped logs
-starttime = time.strftime('%Y%m%d-%H%M%S')
-
 def tweettime2unix(x):
 	'''convert twitter's wacky timestamp into unix time'''
 	return time.mktime( time_parser(x).timetuple() )
@@ -49,8 +46,9 @@ def urlfix(body, tweet):
 
 def tweetparse(tweet, src_account='.', db=None):
 	if 'retweeted_status' in tweet:
+		tweetparse(tweet[u'retweeted_status'], src_account, db)
 		try:
-			tweetparse(tweet[u'retweeted_status'])
+			pass
 		except:
 			pass
 
@@ -76,16 +74,17 @@ def tweetparse(tweet, src_account='.', db=None):
 	u_descr = sanitize(tweet['user']['description'])
 
 	# http://paulgatterdam.com/blog/?p=121
-	'''
-	db.execute('INSERT OR REPLACE into users (id, screen_name, name, descr, lang, time_zone, utc_offset, location) VALUES (?,?,?,?,?,?,?,?)', (u_id, u_handle, u_name, u_descr, u_lang, u_tz, u_utcoff, u_location))
-	db.execute('INSERT OR REPLACE into tweets (id, timestamp, user_id, lang, src_account, text) VALUES (?,?,?,?,?,?)', (t_id, t_time, u_id, t_lang, src_account, t_txt))
-	db.commit()
-	'''
+	if db is not None:
+		db.execute('INSERT OR REPLACE into users (id, screen_name, name, descr, lang, time_zone, utc_offset, location) VALUES (?,?,?,?,?,?,?,?)', (u_id, u_handle, u_name, u_descr, u_lang, u_tz, u_utcoff, u_location))
+		db.execute('INSERT OR REPLACE into tweets (id, timestamp, user_id, lang, src_account, text) VALUES (?,?,?,?,?,?)', (t_id, t_time, u_id, t_lang, src_account, t_txt))
+		db.commit()
+
 	print "[%s] %s <%s> %s" % ( t_time, src_account, u_handle, t_txt)
 
 class StreamPrinter(StreamListener):
 	def __init__(self):
-		self.data_fd = open('firehose_log.%s.json' % starttime, 'a')
+		self.data_fd = None
+		self.src_account = None
 		self.db = None
 		
 	def on_data(self, data):
@@ -94,7 +93,8 @@ class StreamPrinter(StreamListener):
 		except:
 			return # invalid json
 
-		self.data_fd.write(data) # valid json, log it.
+		if self.data_fd is not None:
+			self.data_fd.write(data) # valid json, log it.
 
 		if tweet.keys() == [u'friends']:
 			return # not interested in "friends" packet
@@ -103,7 +103,7 @@ class StreamPrinter(StreamListener):
 			return # not a tweet we can handle
 
 		try:
-			tweetparse(tweet)
+			tweetparse(tweet, self.src_account, self.db)
 		except:
 			pass
 
@@ -124,20 +124,54 @@ def check_login(user, auth):
 
 def main():
 	config = ConfigParser.ConfigParser()
-	if len(sys.argv) > 2:
+	if len(sys.argv) > 1:
 		conf = sys.argv[1]
 	else :
 		conf = 'firehose.ini'
-	config.read(conf)
 
-	user = config.get('firehose', 'user')
-	keywords = config.get('firehose', 'keywords')
+	if len(config.read(conf)) == 0:
+		print "unable to read configuration file '%s'" % conf
+		sys.exit(1)
+
+	user = None
+	if config.has_option('firehose', 'user'):
+		user = config.get('firehose', 'user')
+
+	if (user is None) or len(user) == 0:
+		print "'user' option not specified"
+		sys.exit(1)
+
+	if config.has_option('firehose', 'debug') and (config.get('firehose', 'debug') == True or config.get('firehose', 'debug') == 'True'):
+		tweepy.debug(True)
+
+	logbase = None
+	if config.has_option('firehose', 'logbase'):
+		logbase = config.get('firehose', 'logbase')
+		if (logbase == 'None') or (len(logbase) == 0):
+			logbase = None
+
+	if config.has_option('firehose', 'keywords'):
+		keywords = config.get('firehose', 'keywords').replace(",", " ").split()
+	else:
+		keywords = []
+
 	auth = twitter_auth(user, config)
 	if check_login(user, auth) == False:
 		sys.exit(0)
 
+	print 'active user: ', user
+	print "tracking keywords:", keywords
+
+	twitterStream = Stream(auth, StreamPrinter())
+	twitterStream.listener.src_account = user
+
+	if logbase is None:
+		print "no json logs"
+		twitterStream.listener.data_fd = open('/dev/null', 'a')
+	else:
+		twitterStream.listener.data_fd = open('%s.%s.json' % (logbase, time.strftime('%Y%m%d-%H%M%S')), 'a')
+
 	try:
-		twitterStream = Stream(auth, StreamPrinter())
 		twitterStream.filter(track = keywords)
 	except:
 		twitterStream.disconnect()
