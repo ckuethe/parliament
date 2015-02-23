@@ -10,77 +10,17 @@ import re
 import sys
 import time
 from dateutil.parser import parse as time_parser
-from unicodedata import normalize
-from HTMLParser import HTMLParser
-
-# used for timestamped logs
-starttime = time.strftime('%Y%m%d-%H%M%S')
-
-def tweettime2unix(x):
-	'''convert twitter's wacky timestamp into unix time'''
-	return time.mktime( time_parser(x).timetuple() )
-
-def sanitize(x):
-	'''convert fancy unicode to ascii'''
-	hp = HTMLParser()
-	return hp.unescape( normalize('NFKD', u'%s' % x ).encode('ascii','ignore') )
-
-def urlfix(body, tweet):
-	'''un-shorten stupid t.co links'''
-	for X in tweet[u'entities'][u'urls']:
-		old = X[u'url']
-		new = X[u'expanded_url']
-		body = body.replace(old, new)
-
-	return body
-
-def tweetparse(user, db, tweet):
-	if 'retweeted_status' in tweet:
-		try:
-			tweetparse(user, db, tweet[u'retweeted_status'])
-		except:
-			pass
-
-	if 'text' not in tweet:
-		return
-
-	t_time = 0
-	if 'timestamp_ms' in tweet:
-		t_time = int(tweet['timestamp_ms']) / 1000.0
-	else:
-		t_time = tweettime2unix(tweet['created_at'])
-	t_id = tweet['id']
-	t_lang = tweet['lang']
-	t_txt = sanitize(tweet['text'] )
-
-	if len(tweet[u'entities'][u'urls']):
-		t_txt = urlfix(t_txt, tweet)
-	# XXX figure out what to do about geotags: coordinates, geo, place
-
-	u_id = tweet['user']['id']
-	u_lang = tweet['user']['lang']
-	u_tz = tweet['user']['time_zone']
-	u_utcoff = (tweet['user']['utc_offset'] or 0) / 3600
-	u_location = sanitize(tweet['user']['location'])
-	u_handle = tweet['user']['screen_name']
-	u_name = sanitize(tweet['user']['name'])
-	u_descr = sanitize(tweet['user']['description'])
-
-	# http://paulgatterdam.com/blog/?p=121
-	db.execute('INSERT OR REPLACE into users (id, screen_name, name, descr, lang, time_zone, utc_offset, location) VALUES (?,?,?,?,?,?,?,?)', (u_id, u_handle, u_name, u_descr, u_lang, u_tz, u_utcoff, u_location))
-	db.execute('INSERT OR REPLACE into tweets (id, timestamp, user_id, lang, src_account, text) VALUES (?,?,?,?,?,?)', (t_id, t_time, u_id, t_lang, user, t_txt))
-	db.commit()
-	print "[%s] %s <%s> %s" % ( tweet['created_at'], user, u_handle, t_txt)
-
+from parliament_utils import *
 
 class myStreamListener(StreamListener):
 	def __init__(self):
 		self.data_fd = None
 		self.db = None
 		self.user = None
+		self.starttime = time.strftime('%Y%m%d-%H%M%S')
 
 	def on_connect(self):
-		self.data_fd = open('streamthread_log.%s.%s.json' % (starttime, self.user), 'a')
+		self.data_fd = open('parliament_log.%s.%s.json' % (self.starttime, self.user), 'a')
 
 	def on_data(self, data):
 		try:
@@ -98,43 +38,37 @@ class myStreamListener(StreamListener):
 			return # not a tweet worth decoding
 
 		try:
-			tweetparse(self.user, self.db, tweet)
+			tweetparse(tweet, self.user, self.db)
 		except:
 			pass
 
-def twitter_auth(user, config):
-	auth = tweepy.OAuthHandler( config.get('General', 'consumer_key'), config.get('General', 'consumer_secret'))
-	auth.set_access_token( config.get(user, 'key'), config.get(user, 'secret') )
-	return auth
-
-def check_login(user, auth):
-	api = tweepy.API(auth)
-	if (api.me().screen_name.lower() == user.lower()):
-		return True
-	else:
-		return False
-
+app = 'parliament'
 def stream_thread(user, config):
-	auth = twitter_auth(user, config)
+	auth = twitter_auth(app, user, config)
 	if check_login(user, auth) == False:
+		print "login failed: %s" % user
 		sys.exit(0)
 
 	twitterStream = Stream(auth, myStreamListener())
-	twitterStream.listener.db = sqlite3.connect(config.get('General', 'database'))
+	twitterStream.listener.db = sqlite3.connect(config.get(app, 'database'))
 	twitterStream.listener.user = user
 
+	twitterStream.userstream()
 	try:
-		twitterStream.userstream()
+		pass
 	except:
 		twitterStream.disconnect()
 		sys.exit(0)
 
 def main():
 	config = ConfigParser.ConfigParser()
-	config.read('parliament.ini')
+	config.read('%s.ini' % app)
+
+	if config.has_option(app, 'debug') and (config.get(app, 'debug') == True or config.get(app, 'debug') == 'True'):
+		tweepy.debug(True)
 
 	threads = []
-	for user in config.get('General', 'users').replace(",", " ").split():
+	for user in config.get(app, 'users').replace(",", " ").split():
 		t = threading.Thread(name=user, target=stream_thread, args=(user,config,))
 		threads.append(t)
 		t.start()
