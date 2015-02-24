@@ -8,28 +8,6 @@ import sqlite3
 from parliament_utils import *
 import reverend.thomas
 
-class myTokenizer:
-	def __init__(self):
-		pass
-
-	def tokenize(self, s):
-		stopwords = 'a an am as at and are but can eg not now for i i\'m ie if it is in into to the this my of on our or rt we with you us was when what who how than then they which'.split()
-		s = s.lower().encode('utf-8') # XXX sanitize() should have transcoded this to ascii...
-		s = re.sub('(http|s?ftp|imap|pop3|telnet|ssh)s?:/*\S+', '', s)
-		s = s.translate(None, '<>(){}[]=&!$^|+;:@,."-?')
-
-		# XXX does set() improve or impair classification quality?
-		tokens = sorted(set(s.split()))
-		for w in stopwords:
-			try:
-				tokens.remove(w)
-			except ValueError:
-				pass
-
-		#print "\n========================================================================"
-		#print "\ntokenize(): ", tokens
-		return tokens
-
 def main():
 	dat = 'bayes.dat'
 	tokenizer = myTokenizer()

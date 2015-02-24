@@ -28,6 +28,7 @@ def urlfix(body, tweet):
 			body = body.replace(old, new)
 	return body
 
+###########################################################################
 import time
 from dateutil.parser import parse as time_parser
 def tweettime2unix(x):
@@ -43,13 +44,49 @@ def tweet_time(tweet):
 		t_time = tweettime2unix(tweet['created_at'])
 	return time.strftime("%Y%m%d.%H%M%S", time.localtime(t_time))
 
-from reverend.thomas import Bayes
-def is_worthy(tweet):
-	'''given a tweet, return true if it's sufficiently interesting'''
-	# stub function
-	return True
 
-def tweetparse(tweet, src_account='.', db=None):
+###########################################################################
+import reverend.thomas
+class myTokenizer:
+	def __init__(self):
+		pass
+
+	def tokenize(self, s):
+		stopwords = 'a an am as at and are but can eg not now for i i\'m ie if it is in into to the this my of on our or rt we with you us was when what who how than then they which'.split()
+		s = s.lower().encode('utf-8') # XXX sanitize() should have transcoded this to ascii...
+		s = re.sub('(http|s?ftp|imap|pop3|telnet|ssh)s?:/*\S+', '', s)
+		s = s.translate(None, '<>(){}[]=&!$^|+;:@,."-?')
+
+		# XXX does set() improve or impair classification quality?
+		tokens = sorted(set(s.split()))
+		for w in stopwords:
+			try:
+				tokens.remove(w)
+			except ValueError:
+				pass
+
+		#print "\n========================================================================"
+		#print "\ntokenize(): ", tokens
+		return tokens
+
+def is_worthy(text, classifier=None):
+	'''given a text string, return true if it's sufficiently interesting'''
+
+	# stub function
+	if classifier is None:
+		return True
+
+	try:
+		labels = classifier.guess(text)
+		if labels[0][0] == 'yes':
+			return True
+		else:
+			return False
+	except:
+		return True # default action if the classfier can't answer
+
+###########################################################################
+def tweetparse(tweet, src_account='.', db=None, classfier=None):
 	'''core tweet parser, handles retweets and database inserts'''
 	if 'retweeted_status' in tweet:
 		try:
@@ -78,16 +115,17 @@ def tweetparse(tweet, src_account='.', db=None):
 	u_name = sanitize(tweet['user']['name'])
 	u_descr = sanitize(tweet['user']['description'])
 
-	if is_worthy(tweet):
+	if is_worthy("lang_%s lang_%s %s %s" % (u_lang, t_lang, u_handle, t_txt), classfier):
 		print "[%s] %s <%s> %s" % ( t_time, src_account, u_handle, t_txt)
 
 	# http://paulgatterdam.com/blog/?p=121
-	if db is not None:
-		db.execute('INSERT OR REPLACE into users (id, screen_name, name, descr, lang, time_zone, utc_offset, location) VALUES (?,?,?,?,?,?,?,?)', (u_id, u_handle, u_name, u_descr, u_lang, u_tz, u_utcoff, u_location))
-		db.execute('INSERT OR REPLACE into tweets (id, timestamp, user_id, lang, src_account, text) VALUES (?,?,?,?,?,?)', (t_id, t_time, u_id, t_lang, src_account, t_txt))
-		db.commit()
+		if db is not None:
+			db.execute('INSERT OR REPLACE into users (id, screen_name, name, descr, lang, time_zone, utc_offset, location) VALUES (?,?,?,?,?,?,?,?)', (u_id, u_handle, u_name, u_descr, u_lang, u_tz, u_utcoff, u_location))
+			db.execute('INSERT OR REPLACE into tweets (id, timestamp, user_id, lang, src_account, text) VALUES (?,?,?,?,?,?)', (t_id, t_time, u_id, t_lang, src_account, t_txt))
+			db.commit()
 	return
 
+###########################################################################
 import tweepy
 
 def check_login(user, auth):
@@ -102,6 +140,7 @@ def twitter_auth(app, user, config):
 	auth.set_access_token( config.get(user, 'key'), config.get(user, 'secret') )
 	return auth
 
+###########################################################################
 import sys,tty,termios
 def kbhit(promptstr=None):
 	'''simple 1 character prompter'''
