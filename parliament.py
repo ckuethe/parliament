@@ -11,12 +11,14 @@ import sys
 import time
 from dateutil.parser import parse as time_parser
 from parliament_utils import *
+import reverend.thomas
 
 class myStreamListener(StreamListener):
 	def __init__(self):
 		self.data_fd = None
 		self.db = None
 		self.user = None
+		self.classifier = None
 		self.starttime = time.strftime('%Y%m%d-%H%M%S')
 
 	def on_connect(self):
@@ -38,12 +40,13 @@ class myStreamListener(StreamListener):
 			return # not a tweet worth decoding
 
 		try:
-			tweetparse(tweet, self.user, self.db)
+			tweetparse(tweet, self.user, self.db, self.classifier)
 		except:
 			pass
 
 app = 'parliament'
-def stream_thread(user, config):
+
+def stream_thread(user, config, classifier=None):
 	auth = twitter_auth(app, user, config)
 	if check_login(user, auth) == False:
 		print "login failed: %s" % user
@@ -52,6 +55,7 @@ def stream_thread(user, config):
 	twitterStream = Stream(auth, myStreamListener())
 	twitterStream.listener.db = sqlite3.connect(config.get(app, 'database'))
 	twitterStream.listener.user = user
+	twitterStream.listener.classifier = classifier
 
 	twitterStream.userstream()
 	try:
@@ -64,12 +68,20 @@ def main():
 	config = ConfigParser.ConfigParser()
 	config.read('%s.ini' % app)
 
+        try:
+		bayes_file = config.get(app, 'bayes')
+		tokenizer = myTokenizer()
+		classifier = reverend.thomas.Bayes(tokenizer)
+		classifier.load(bayes_file)
+        except Exception:
+		classifier = None
+
 	if config.has_option(app, 'debug') and (config.get(app, 'debug') == True or config.get(app, 'debug') == 'True'):
 		tweepy.debug(True)
 
 	threads = []
 	for user in config.get(app, 'users').replace(",", " ").split():
-		t = threading.Thread(name=user, target=stream_thread, args=(user,config,))
+		t = threading.Thread(name=user, target=stream_thread, args=(user,config,classifier,))
 		threads.append(t)
 		t.start()
 
