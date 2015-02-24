@@ -102,3 +102,34 @@ def twitter_auth(app, user, config):
 	auth.set_access_token( config.get(user, 'key'), config.get(user, 'secret') )
 	return auth
 
+import sys,tty,termios
+def kbhit(promptstr=None):
+	'''simple 1 character prompter'''
+	if promptstr:
+		print promptstr,
+
+	while(1):
+		fd = sys.stdin.fileno()
+		ta = termios.tcgetattr(fd)
+		try:
+			tty.setraw(fd)
+			k = sys.stdin.read(1)
+		finally:
+			termios.tcsetattr(fd, termios.TCSADRAIN, ta)
+
+		if k != '':
+			break
+
+	if   k in '+YyUu' : # upvote
+		return '+'
+	elif k in '0Hh ' : # novote
+		return '0'
+	elif k in '-NnDd' : # downvote
+		return '-'
+	elif k in 'FfXx' : # unvote
+		return 'x'
+	elif k in 'Qq' : # quit
+		return 'q'
+	else: # default behavior = "novote"
+		return '0'
+
