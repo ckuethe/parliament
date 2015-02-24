@@ -3,6 +3,7 @@
 ; sqlite database to write
 ; unset it, leave it empty, or set to 'None' to not use the database
 database = firehose.db
+bayes = bayes.dat
 
 ; unset, leav it empty, or set to 'None' to not write json log to disk
 ; otherwise log to "${logbase}.${timestamp}.json"

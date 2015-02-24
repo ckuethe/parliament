@@ -10,11 +10,13 @@ import time
 from unicodedata import normalize
 from HTMLParser import HTMLParser
 from parliament_utils import *
+import reverend.thomas
 
 class StreamPrinter(StreamListener):
 	def __init__(self):
 		self.data_fd = None
 		self.src_account = None
+		self.classifier = None
 		self.db = None
 		
 	def on_data(self, data):
@@ -33,7 +35,7 @@ class StreamPrinter(StreamListener):
 			return # not a tweet we can handle
 
 		try:
-			tweetparse(tweet, self.src_account, self.db)
+			tweetparse(tweet, self.src_account, self.db, self.classifier)
 		except:
 			pass
 
@@ -61,6 +63,14 @@ def main():
 		print "'user' option not specified"
 		sys.exit(1)
 
+        try:
+		bayes_file = config.get(app, 'bayes')
+		tokenizer = myTokenizer()
+		classifier = reverend.thomas.Bayes(tokenizer)
+		classifier.load(bayes_file)
+        except Exception:
+		classifier = None
+
 	if config.has_option(app, 'debug') and (config.get(app, 'debug') == True or config.get(app, 'debug') == 'True'):
 		tweepy.debug(True)
 
@@ -84,6 +94,7 @@ def main():
 
 	twitterStream = Stream(auth, StreamPrinter())
 	twitterStream.listener.src_account = user
+	twitterStream.listener.classifier = classifier
 
 	if logbase is None:
 		print "no json logs"
