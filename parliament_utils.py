@@ -43,6 +43,11 @@ def tweet_time(tweet):
 		t_time = tweettime2unix(tweet['created_at'])
 	return time.strftime("%Y%m%d.%H%M%S", time.localtime(t_time))
 
+from reverend.thomas import Bayes
+def is_worthy(tweet):
+	'''given a tweet, return true if it's sufficiently interesting'''
+	# stub function
+	return True
 
 def tweetparse(tweet, src_account='.', db=None):
 	'''core tweet parser, handles retweets and database inserts'''
@@ -73,7 +78,8 @@ def tweetparse(tweet, src_account='.', db=None):
 	u_name = sanitize(tweet['user']['name'])
 	u_descr = sanitize(tweet['user']['description'])
 
-	print "[%s] %s <%s> %s" % ( t_time, src_account, u_handle, t_txt)
+	if is_worthy(tweet):
+		print "[%s] %s <%s> %s" % ( t_time, src_account, u_handle, t_txt)
 
 	# http://paulgatterdam.com/blog/?p=121
 	if db is not None:
