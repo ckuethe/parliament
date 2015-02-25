@@ -90,7 +90,9 @@ def tweetparse(tweet, src_account='.', db=None, classfier=None):
 	'''core tweet parser, handles retweets and database inserts'''
 	if 'retweeted_status' in tweet:
 		try:
-			tweetparse(tweet[u'retweeted_status'], src_account, db, classifier)
+			interesting, confidence = tweetparse(tweet[u'retweeted_status'], src_account, db, classifier)
+			if interesting == False:
+				return interesting, confidence
 		except:
 			pass
 
@@ -116,7 +118,7 @@ def tweetparse(tweet, src_account='.', db=None, classfier=None):
 	u_descr = sanitize(tweet['user']['description'])
 
 	interesting, confidence =  is_worthy("lang_%s lang_%s %s %s" % (u_lang, t_lang, u_handle, t_txt), classfier)
-	if interesting:
+	if (interesting * confidence) > 0.0:
 		print "%3d%% [%s] %s <%s> %s" % (int(confidence*100), t_time, src_account, u_handle, t_txt)
 
 	# http://paulgatterdam.com/blog/?p=121
@@ -124,7 +126,7 @@ def tweetparse(tweet, src_account='.', db=None, classfier=None):
 			db.execute('INSERT OR REPLACE into users (id, screen_name, name, descr, lang, time_zone, utc_offset, location) VALUES (?,?,?,?,?,?,?,?)', (u_id, u_handle, u_name, u_descr, u_lang, u_tz, u_utcoff, u_location))
 			db.execute('INSERT OR REPLACE into tweets (id, timestamp, user_id, lang, src_account, text) VALUES (?,?,?,?,?,?)', (t_id, t_time, u_id, t_lang, src_account, t_txt))
 			db.commit()
-	return
+	return interesting, confidence
 
 ###########################################################################
 import tweepy
