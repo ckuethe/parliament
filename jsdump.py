@@ -10,11 +10,14 @@ def main():
 	for f in sys.argv[1:] :
 		fd = open(f, 'r')
 		for js in fd.readlines() :
-			tweet = json.loads(js)
-			if 'text' not in tweet:
-				continue;
+			try:
+				tweet = json.loads(js)
+				if 'text' not in tweet:
+					continue;
 
-			tweetparse(tweet, '')
+				tweetparse(tweet, '')
+			except:
+				pass
 
 		fd.close()
 		print ""
