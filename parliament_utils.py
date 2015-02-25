@@ -74,23 +74,23 @@ def is_worthy(text, classifier=None):
 
 	# stub function
 	if classifier is None:
-		return True
+		return True, 1.0
 
 	try:
 		labels = classifier.guess(text)
 		if labels[0][0] == 'yes':
-			return True
+			return True, labels[0][1]
 		else:
-			return False
+			return False, labels[0][1]
 	except:
-		return True # default action if the classfier can't answer
+		return True, 0.0 # default action if the classfier can't answer
 
 ###########################################################################
 def tweetparse(tweet, src_account='.', db=None, classfier=None):
 	'''core tweet parser, handles retweets and database inserts'''
 	if 'retweeted_status' in tweet:
 		try:
-			tweetparse(tweet[u'retweeted_status'], src_account, db)
+			tweetparse(tweet[u'retweeted_status'], src_account, db, classifier)
 		except:
 			pass
 
@@ -115,8 +115,9 @@ def tweetparse(tweet, src_account='.', db=None, classfier=None):
 	u_name = sanitize(tweet['user']['name'])
 	u_descr = sanitize(tweet['user']['description'])
 
-	if is_worthy("lang_%s lang_%s %s %s" % (u_lang, t_lang, u_handle, t_txt), classfier):
-		print "[%s] %s <%s> %s" % ( t_time, src_account, u_handle, t_txt)
+	interesting, confidence =  is_worthy("lang_%s lang_%s %s %s" % (u_lang, t_lang, u_handle, t_txt), classfier)
+	if interesting:
+		print "%3d%% [%s] %s <%s> %s" % (int(confidence*100), t_time, src_account, u_handle, t_txt)
 
 	# http://paulgatterdam.com/blog/?p=121
 		if db is not None:

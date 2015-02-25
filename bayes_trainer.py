@@ -34,8 +34,8 @@ def main():
 				tweet['user']['screen_name'],
 				tweet['text']) )
 
-
 			labels = classifier.guess(text)
+			'''
 			if len(labels) == 0:
 				mute = False # default action if the classfier can't answer
 				confidence = 0.5
@@ -56,8 +56,8 @@ def main():
 				# continue	# uncomment to not retrain muted items
 			else:
 				print "=(^.^)=      shiny!!"
-
-			tweetparse(tweet)
+			'''
+			tweetparse(tweet, None, None, classifier)
 			print labels
 			k = kbhit('up-/down-vote?') # returns '+0- xq'
 			print ""
