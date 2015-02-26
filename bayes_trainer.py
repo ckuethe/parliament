@@ -34,31 +34,9 @@ def main():
 				tweet['user']['screen_name'],
 				tweet['text']) )
 
-			labels = classifier.guess(text)
-			'''
-			if len(labels) == 0:
-				mute = False # default action if the classifier can't answer
-				confidence = 0.5
-			else:
-				if labels[0][0] == 'yes':
-					mute = False
-				else:
-					mute = True
-				confidence = labels[0][1]
-
-			if confidence >= 0.98:
-				# classifier is sure of itself, don't offer to re-train
-				continue
-
-			print ""
-			if mute:
-				print "*plonk*"
-				# continue	# uncomment to not retrain muted items
-			else:
-				print "=(^.^)=      shiny!!"
-			'''
-			tweetparse(tweet, None, None, classifier)
-			print labels
+			interesting, confidence = is_worthy(text, classifier)
+			tweetparse(tweet)
+			print "interesting=%d confidence=%d%%" % (interesting, int(confidence*100))
 			k = kbhit('up-/down-vote?') # returns '+0- xq'
 			print ""
 			if k == '+' :
