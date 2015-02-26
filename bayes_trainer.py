@@ -37,7 +37,7 @@ def main():
 			labels = classifier.guess(text)
 			'''
 			if len(labels) == 0:
-				mute = False # default action if the classfier can't answer
+				mute = False # default action if the classifier can't answer
 				confidence = 0.5
 			else:
 				if labels[0][0] == 'yes':
