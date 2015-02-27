@@ -57,7 +57,6 @@ class myTokenizer:
 		s = re.sub('(http|s?ftp|imap|pop3|telnet|ssh)s?:/*\S+', '', s)
 		s = s.translate(None, '<>(){}[]=&!$^|+;:@,."-?')
 
-		# XXX does set() improve or impair classification quality?
 		tokens = sorted(set(s.split()))
 		for w in stopwords:
 			try:
@@ -107,7 +106,6 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None):
 
 	if '//t.co/' in t_txt:
 		t_txt = urlfix(t_txt, tweet)
-	# XXX figure out what to do about geotags: coordinates, geo, place
 
 	u_id = tweet['user']['id']
 	u_lang = tweet['user']['lang']

@@ -41,11 +41,9 @@ def main():
 			print ""
 			if k == '+' :
 				# print "train('yes')"
-				# XXX untrain no?
 				classifier.train('yes', text)	
 			elif k == '-' :
 				# print "train('no')"
-				# XXX untrain yes?
 				classifier.train('no', text)
 			elif k == 'x' :
 				# print "forgetting..."
