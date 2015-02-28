@@ -85,11 +85,11 @@ def is_worthy(text, classifier=None):
 		return True, 0.0 # default action if the classifier can't answer
 
 ###########################################################################
-def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False):
+def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, dbsync=True):
 	'''core tweet parser, handles retweets and database inserts'''
 	if 'retweeted_status' in tweet:
 		try:
-			interesting, confidence = tweetparse(tweet[u'retweeted_status'], src_account, db, classifier, quiet)
+			interesting, confidence = tweetparse(tweet[u'retweeted_status'], src_account, db, classifier, quiet, dbsync)
 			if interesting == False:
 				return interesting, confidence
 		except Exception as e:
@@ -125,7 +125,8 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False):
 		if db is not None:
 			db.execute('INSERT OR REPLACE into users (id, screen_name, name, descr, lang, time_zone, utc_offset, location) VALUES (?,?,?,?,?,?,?,?)', (u_id, u_handle, u_name, u_descr, u_lang, u_tz, u_utcoff, u_location))
 			db.execute('INSERT OR REPLACE into tweets (id, timestamp, user_id, lang, src_account, text) VALUES (?,?,?,?,?,?)', (t_id, t_time, u_id, t_lang, src_account, t_txt))
-			db.commit()
+			if dbsync:
+				db.commit()
 	return interesting, confidence
 
 ###########################################################################

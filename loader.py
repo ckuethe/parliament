@@ -14,6 +14,7 @@ def main():
 	parser = OptionParser()
 	parser.add_option( "-d", "--database", dest="database", default=None, help="database file", metavar='FILE')
 	parser.add_option( "-u", "--user", dest="user", default='.', help="user name to insert as", metavar='USER')
+	parser.add_option( "-v", "--verbose", dest="quiet", default=True, action="store_false", help="print tweets during load")
 	(options, args) = parser.parse_args()
 
 	if options.database:
@@ -28,7 +29,7 @@ def main():
 		for js in fd.readlines() :
 			try:
 				tweet = json.loads(js)
-				tweetparse(tweet, src_account=options.user, db=db, quiet=True)
+				tweetparse(tweet, src_account=options.user, db=db, quiet=options.quiet, dbsync=False)
 			except ValueError, KeyError:
 				continue
 			linecounter += 1
