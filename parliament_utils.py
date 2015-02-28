@@ -85,11 +85,11 @@ def is_worthy(text, classifier=None):
 		return True, 0.0 # default action if the classifier can't answer
 
 ###########################################################################
-def tweetparse(tweet, src_account='.', db=None, classifier=None):
+def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False):
 	'''core tweet parser, handles retweets and database inserts'''
 	if 'retweeted_status' in tweet:
 		try:
-			interesting, confidence = tweetparse(tweet[u'retweeted_status'], src_account, db, classifier)
+			interesting, confidence = tweetparse(tweet[u'retweeted_status'], src_account, db, classifier, quiet)
 			if interesting == False:
 				return interesting, confidence
 		except Exception as e:
@@ -118,7 +118,8 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None):
 
 	interesting, confidence =  is_worthy("lang_%s lang_%s %s %s" % (u_lang, t_lang, u_handle, t_txt), classifier)
 	if (interesting * confidence) > 0.0:
-		print "%3d%% [%s] %s <%s> %s" % (int(confidence*100), t_time, src_account, u_handle, t_txt)
+		if quiet == False:
+			print "%3d%% [%s] %s <%s> %s" % (int(confidence*100), t_time, src_account, u_handle, t_txt)
 
 	# http://paulgatterdam.com/blog/?p=121
 		if db is not None:
