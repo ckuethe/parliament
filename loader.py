@@ -12,11 +12,14 @@ def raw_dot():
 def main():
 	from optparse import OptionParser
 	parser = OptionParser()
-	parser.add_option( "-d", "--database", dest="database", default='parliament.db', help="database file", metavar='FILE')
+	parser.add_option( "-d", "--database", dest="database", default=None, help="database file", metavar='FILE')
 	parser.add_option( "-u", "--user", dest="user", default='.', help="user name to insert as", metavar='USER')
 	(options, args) = parser.parse_args()
 
-	db = sqlite3.connect(options.database)
+	if options.database:
+		db = sqlite3.connect(options.database)
+	else:
+		db = None
 
 	linecounter = 0
 	for f in args :
@@ -25,16 +28,18 @@ def main():
 		for js in fd.readlines() :
 			try:
 				tweet = json.loads(js)
-				tweetparse(tweet, src_account=options.user, quiet=True)
+				tweetparse(tweet, src_account=options.user, db=db, quiet=True)
 			except ValueError, KeyError:
 				continue
 			linecounter += 1
 			if (linecounter % 250) == 0:
 				raw_dot()
-				db.commit()
+				if db:
+					db.commit()
 		fd.close()
 		print ""
-		db.commit()
+		if db:
+			db.commit()
 
 if __name__ == '__main__':
 	main()
