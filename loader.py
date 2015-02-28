@@ -26,7 +26,7 @@ def main():
 	for f in args :
 		print "open(%s)" % f
 		fd = open(f, 'r')
-		for js in fd.readlines() :
+		for js in fd :
 			try:
 				tweet = json.loads(js)
 				tweetparse(tweet, src_account=options.user, db=db, quiet=options.quiet, dbsync=False)
