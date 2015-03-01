@@ -3,23 +3,26 @@
 import os
 import sys
 import json
-import ConfigParser
 import sqlite3
 from parliament_utils import *
 import reverend.thomas
+from optparse import OptionParser
 
 def main():
-	dat = 'bayes.dat'
+	parser = OptionParser()
+	parser.add_option( "-b", "--bayesfile", dest="bayesfile", default='bayes.dat', help="FILE to operate on. Required.", metavar="FILE") 
+	(options, args) = parser.parse_args()
+
 	tokenizer = myTokenizer()
 	classifier = reverend.thomas.Bayes(tokenizer)
 	try:
-		classifier.load(dat)
+		classifier.load(options.bayesfile)
 	except IOError:
-		print "INFO: unable to load bayes file '%s'" % dat
+		print "INFO: unable to load bayes file '%s'" % options.bayesfile
 		pass
 
 	n = 0
-	for f in sys.argv[1:] :
+	for f in args :
 		print "open(%s)" % f
 		fd = open(f, 'r')
 		for js in fd.readlines() :
@@ -50,7 +53,7 @@ def main():
 				classifier.untrain('yes', text)
 				classifier.untrain('no', text)
 			elif k == 'q' :
-				classifier.save(dat)
+				classifier.save(options.bayesfile)
 				sys.exit(0)
 			else :
 				# print "no-op"
@@ -58,15 +61,14 @@ def main():
 
 			n += 1
 			if (n % 25) == 0 : # save classifier state
-				classifier.save(dat)
+				classifier.save(options.bayesfile)
 		fd.close()
 		try:
-			classifier.save(dat)
+			classifier.save(options.bayesfile)
 		except Exception:
-			print "WARN: unable to load bayes file '%s'" % dat
+			print "WARN: unable to load bayes file '%s'" % options.bayesfile
 			pass
 		print ""
 
 if __name__ == '__main__':
 	main()
-
