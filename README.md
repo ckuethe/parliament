@@ -6,6 +6,9 @@ active twitter users can make it easy to miss interesting content;  parliament
 can help by applying various text processing techniques such as naive bayesian
 filtering, clustering and scoring. It's very much a work in progress.
 
+Along with the text of the tweet, user, languages, and source application are
+also considered during scoring.
+
 ## General Structure
 
 ### parliament_utils.py
