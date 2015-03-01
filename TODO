@@ -3,3 +3,5 @@ bayes_trainer.py
 parliament_utils.py
 	- does using only unique tokens from set() improve or impair classification quality?
 	- figure out what to do about geotags: coordinates, geo, place
+	- unshorten all urls
+	- extract tokens from URLs for scoring
