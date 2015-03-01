@@ -1,9 +1,14 @@
 bayes_trainer.py
 	- untrain words from one category when training in another?
+	- TF-IDF distiller to strip out low-influence words?
+	- infinite weight (white-/black-list) words
+	- random sample training
+	- training set gen: classify feed into {true,false}-{positive,negative}
 parliament_utils.py
-	- does using only unique tokens from set() improve or impair classification quality?
 	- figure out what to do about geotags: coordinates, geo, place
 	- unshorten all urls
 	- extract tokens from URLs for scoring
+	- strip urls from text, tokenize separately
 	- user reputation?
 	- multiple retweet suppression?
+
