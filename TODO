@@ -11,4 +11,4 @@ parliament_utils.py
 	- strip urls from text, tokenize separately
 	- user reputation?
 	- multiple retweet suppression?
-
+	- decaying filters for short lived drama
