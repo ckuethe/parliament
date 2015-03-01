@@ -5,3 +5,5 @@ parliament_utils.py
 	- figure out what to do about geotags: coordinates, geo, place
 	- unshorten all urls
 	- extract tokens from URLs for scoring
+	- user reputation?
+	- multiple retweet suppression?
