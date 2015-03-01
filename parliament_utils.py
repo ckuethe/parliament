@@ -52,12 +52,13 @@ class myTokenizer:
 		pass
 
 	def tokenize(self, s):
-		stopwords = 'a an am as at and are but can eg not now for i i\'m ie if it is in into to the this my of on our or rt we with you us was when what who how than then they which'.split()
+		# "rt" is not a stopword, since it may be worth filtering out retweets, but not the original tweet
+		stopwords = 'a an am as at and are but can eg not now for i i\'m ie if it is in into to the this my of on our or we with you us was when what who how than then they which'.split()
 		s = s.lower().encode('utf-8') # XXX sanitize() should have transcoded this to ascii...
 		s = re.sub('(http|s?ftp|imap|pop3|telnet|ssh)s?:/*\S+', '', s)
 		s = s.translate(None, '<>(){}[]=&!$^|+;:@,."-?')
 
-		tokens = sorted(set(s.split()))
+		tokens = s.split()
 		for w in stopwords:
 			try:
 				tokens.remove(w)
@@ -103,6 +104,7 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, db
 	t_id = tweet['id']
 	t_lang = tweet['lang']
 	t_txt = sanitize(tweet['text'] )
+	t_src = sanitize(re.sub('<[^>]+>', '', tweet['source'])).replace(' ', '_')
 
 	if '//t.co/' in t_txt:
 		t_txt = urlfix(t_txt, tweet)
@@ -116,7 +118,7 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, db
 	u_name = sanitize(tweet['user']['name'])
 	u_descr = sanitize(tweet['user']['description'])
 
-	interesting, confidence =  is_worthy("lang_%s lang_%s %s %s" % (u_lang, t_lang, u_handle, t_txt), classifier)
+	interesting, confidence =  is_worthy("source_%s lang_%s lang_%s %s %s" % (t_src, u_lang, t_lang, u_handle, t_txt), classifier)
 	if (interesting * confidence) > 0.0:
 		if quiet == False:
 			print "%3d%% [%s] %s <%s> %s" % (int(confidence*100), t_time, src_account, u_handle, t_txt)
