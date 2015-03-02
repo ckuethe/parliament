@@ -32,8 +32,9 @@ def main():
 
 			# "lang_%s" generates a meaningful token
 			# screen_name generates a meaningful token
-			text = sanitize("lang_%s lang_%s %s %s" %
+			text = sanitize("lang_%s lang_%s source_%s user_%s %s" %
 				(tweet['user']['lang'], tweet['lang'],
+				re.sub('<[^>]+>', '', tweet['source']).replace(' ', '_'),
 				tweet['user']['screen_name'],
 				tweet['text']) )
 

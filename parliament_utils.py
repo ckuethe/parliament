@@ -118,7 +118,7 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, db
 	u_name = sanitize(tweet['user']['name'])
 	u_descr = sanitize(tweet['user']['description'])
 
-	interesting, confidence =  is_worthy("source_%s lang_%s lang_%s %s %s" % (t_src, u_lang, t_lang, u_handle, t_txt), classifier)
+	interesting, confidence =  is_worthy("source_%s lang_%s lang_%s user_%s %s" % (t_src, u_lang, t_lang, u_handle, t_txt), classifier)
 	if (interesting * confidence) > 0.0:
 		if quiet == False:
 			print "%3d%% [%s] %s <%s> %s" % (int(confidence*100), t_time, src_account, u_handle, t_txt)
