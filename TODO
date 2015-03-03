@@ -10,6 +10,6 @@ parliament_utils.py
 	- extract tokens from URLs for scoring
 	- strip urls from text, tokenize separately
 	- user reputation?
-	- multiple retweet suppression?
 	- don't print the retweet, just the source tweet?
 	- decaying filters for short lived drama
+	- decrease reputation for retweeting old content
