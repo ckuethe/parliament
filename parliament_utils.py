@@ -104,7 +104,7 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, db
 	t_lang = tweet['lang']
 	t_txt = sanitize(tweet['text'] )
 	t_src = sanitize(re.sub('<[^>]+>', '', tweet['source'])).replace(' ', '_')
-	t_hash = hashlib.sha1(t_txt).hexdigest()
+	t_hash = hashlib.sha1( re.sub('https?:/*\S+', '', t_txt) ).hexdigest()
 
 	if dedup:
 		if t_id in dedup or t_hash in dedup:
