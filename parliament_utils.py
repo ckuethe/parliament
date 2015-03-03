@@ -86,16 +86,14 @@ def is_worthy(text, classifier=None):
 		return True, 0.0 # default action if the classifier can't answer
 
 ###########################################################################
-def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, dbsync=True):
+def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, dbsync=True, rtuser=None):
 	'''core tweet parser, handles retweets and database inserts'''
 	if 'retweeted_status' in tweet:
 		try:
-			interesting, confidence = tweetparse(tweet[u'retweeted_status'], src_account, db, classifier, quiet, dbsync)
-			if interesting == False:
-				return interesting, confidence
+			return tweetparse(tweet[u'retweeted_status'], src_account, db, classifier, quiet, dbsync, tweet['user']['screen_name'])
 		except Exception as e:
 			print "failed to parse retweet:", e
-			pass
+			return False, 0.0
 
 	if 'text' not in tweet:
 		return
@@ -118,10 +116,18 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, db
 	u_name = sanitize(tweet['user']['name'])
 	u_descr = sanitize(tweet['user']['description'])
 
-	interesting, confidence =  is_worthy("source_%s lang_%s lang_%s user_%s %s" % (t_src, u_lang, t_lang, u_handle, t_txt), classifier)
+	if rtuser:
+		rttoken = "user_%s" % rtuser
+	else:
+		rttoken = ''
+	interesting, confidence =  is_worthy("source_%s lang_%s lang_%s user_%s %s %s" % (t_src, u_lang, t_lang, u_handle, t_txt, rttoken), classifier)
 	if (interesting * confidence) > 0.0:
 		if quiet == False:
-			print "%3d%% [%s] %s <%s> %s" % (int(confidence*100), t_time, src_account, u_handle, t_txt)
+			if rtuser:
+				rttoken = "<via @%s>" % rtuser
+			else:
+				rttoken = ''
+			print "%3d%% [%s] %s <%s> %s %s" % (int(confidence*100), t_time, src_account, u_handle, t_txt, rttoken)
 
 	# http://paulgatterdam.com/blog/?p=121
 		if db is not None:
