@@ -18,6 +18,7 @@ class StreamPrinter(StreamListener):
 		self.src_account = None
 		self.classifier = None
 		self.db = None
+		self.dedup = {'None': True}
 		
 	def on_data(self, data):
 		try:
@@ -35,7 +36,7 @@ class StreamPrinter(StreamListener):
 			return # not a tweet we can handle
 
 		try:
-			tweetparse(tweet, '', self.db, self.classifier)
+			tweetparse(tweet, src_account='', db=self.db, classifier=self.classifier, dedup=self.dedup)
 		except:
 			pass
 
