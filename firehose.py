@@ -35,7 +35,7 @@ class StreamPrinter(StreamListener):
 			return # not a tweet we can handle
 
 		try:
-			tweetparse(tweet, self.src_account, self.db, self.classifier)
+			tweetparse(tweet, '', self.db, self.classifier)
 		except:
 			pass
 
