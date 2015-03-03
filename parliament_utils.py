@@ -86,6 +86,7 @@ def is_worthy(text, classifier=None):
 		return True, 0.0 # default action if the classifier can't answer
 
 ###########################################################################
+import hashlib
 def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, dbsync=True, rtuser=None, dedup=None):
 	'''core tweet parser, handles retweets and database inserts'''
 	if 'retweeted_status' in tweet:
@@ -103,12 +104,14 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, db
 	t_lang = tweet['lang']
 	t_txt = sanitize(tweet['text'] )
 	t_src = sanitize(re.sub('<[^>]+>', '', tweet['source'])).replace(' ', '_')
+	t_hash = hashlib.sha1(t_txt).hexdigest()
 
 	if dedup:
-		if t_id in dedup:
+		if t_id in dedup or t_hash in dedup:
 			return False, 0.0
 		else:
 			dedup[t_id] = True
+			dedup[t_hash] = True
 
 	if '//t.co/' in t_txt:
 		t_txt = urlfix(t_txt, tweet)
