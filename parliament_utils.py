@@ -12,7 +12,7 @@ from unicodedata import normalize
 hp = HTMLParser()
 def sanitize(x):
 	'''transcode unicode and html entities to ascii approximations'''
-	return hp.unescape( normalize('NFKD', u'%s' % x ).encode('ascii','ignore') )
+	return hp.unescape( normalize('NFKD', u'%s' % x ).encode('ascii','ignore').replace("\n", ' ') )
 
 def urlfix(body, tweet):
 	'''un-shorten stupid t.co links'''
