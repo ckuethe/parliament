@@ -11,10 +11,14 @@ from optparse import OptionParser
 def main():
 	parser = OptionParser()
 	parser.add_option( "-b", "--bayesfile", dest="bayesfile", default='bayes.dat', help="FILE to operate on. Required.", metavar="FILE") 
+	parser.add_option( "-d", "--dedup", dest="dedup", default=False, action="store_true", help="suppress excessively similar tweets during training.")
 	(options, args) = parser.parse_args()
 
 	tokenizer = myTokenizer()
 	classifier = reverend.thomas.Bayes(tokenizer)
+	dedup = None
+	if options.dedup:
+		dedup = {'None': True}
 	try:
 		classifier.load(options.bayesfile)
 	except IOError:
@@ -23,7 +27,6 @@ def main():
 
 	n = 0
 	for f in args :
-		print "open(%s)" % f
 		fd = open(f, 'r')
 		for js in fd.readlines() :
 			tweet = json.loads(js)
@@ -39,7 +42,9 @@ def main():
 				tweet['text']) )
 
 			interesting, confidence = is_worthy(text, classifier)
-			tweetparse(tweet)
+			x, y = tweetparse(tweet, dedup=dedup)
+			if x == False and y == 0.0:
+				continue # suppressed by deduper
 			print "interesting=%d confidence=%d%%" % (interesting, int(confidence*100))
 			k = kbhit('up-/down-vote?') # returns '+0- xq'
 			print ""
