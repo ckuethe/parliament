@@ -29,7 +29,10 @@ def main():
 	for f in args :
 		fd = open(f, 'r')
 		for js in fd.readlines() :
-			tweet = json.loads(js)
+			try:
+				tweet = json.loads(js)
+			except ValueError:
+				continue
 			if 'text' not in tweet:
 				continue # can't classify non-text tweets
 
