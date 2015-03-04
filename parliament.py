@@ -8,6 +8,8 @@ import json
 import ConfigParser
 import re
 import sys
+import os
+from stat import *
 import time
 from dateutil.parser import parse as time_parser
 from parliament_utils import *
@@ -64,22 +66,36 @@ def stream_thread(user, config, classifier=None):
 		twitterStream.disconnect()
 		sys.exit(0)
 
+def bayes_thread(bayes_file, classifier=None):
+	'''watch the bayes file for changes, and reload in-memory representation'''
+	ftime = 0
+	while True:
+		try:
+			t = os.stat(bayes_file).st_mtime
+			if t > ftime:
+				ftime = t
+				classifier.load(bayes_file)
+				print "loaded bayes database"
+		except Exception:
+			pass
+		time.sleep(10)
+
+
 def main():
 	config = ConfigParser.ConfigParser()
 	config.read('%s.ini' % app)
-
-        try:
-		bayes_file = config.get(app, 'bayes')
-		tokenizer = myTokenizer()
-		classifier = reverend.thomas.Bayes(tokenizer)
-		classifier.load(bayes_file)
-        except Exception:
-		classifier = None
 
 	if config.has_option(app, 'debug') and (config.get(app, 'debug') == True or config.get(app, 'debug') == 'True'):
 		tweepy.debug(True)
 
 	threads = []
+	tokenizer = myTokenizer()
+	classifier = reverend.thomas.Bayes(tokenizer)
+
+	t = threading.Thread(name='bayes', target=bayes_thread, args=(config.get(app, 'bayes'), classifier,))
+	threads.append(t)
+	t.start()
+
 	for user in config.get(app, 'users').replace(",", " ").split():
 		t = threading.Thread(name=user, target=stream_thread, args=(user,config,classifier,))
 		threads.append(t)
