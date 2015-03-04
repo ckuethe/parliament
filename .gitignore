@@ -2,5 +2,6 @@
 *.json
 *.ini
 *.db
+*.dat
 *.pyc
 api_keys
