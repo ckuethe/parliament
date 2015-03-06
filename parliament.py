@@ -101,8 +101,13 @@ def main():
 		threads.append(t)
 		t.start()
 
-	while 1:
-		time.sleep(0.2)
+	while True:
+		try:
+			time.sleep(0.2)
+		except (KeyboardInterrupt, SystemExit):
+			for t in threads:
+				t._Thread__stop()
+			sys.exit(0)
 
 if __name__ == '__main__':
 	main()
