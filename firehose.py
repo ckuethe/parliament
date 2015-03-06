@@ -11,6 +11,7 @@ from unicodedata import normalize
 from HTMLParser import HTMLParser
 from parliament_utils import *
 import reverend.thomas
+import setproctitle
 
 class StreamPrinter(StreamListener):
 	def __init__(self):
@@ -52,6 +53,7 @@ def main():
 	else :
 		conf = '%s.ini' % app
 
+	setproctitle.setproctitle(re.sub('[.]ini', '', conf))
 	if len(config.read(conf)) == 0:
 		print "unable to read configuration file '%s'" % conf
 		sys.exit(1)
