@@ -4,6 +4,7 @@ bayes_trainer.py
 	- infinite weight (white-/black-list) words
 	- random sample training
 	- training set gen: classify feed into {true,false}-{positive,negative}
+	- interactively select tokens to train with (user, program, hashtags)
 parliament_utils.py
 	- figure out what to do about geotags: coordinates, geo, place
 	- unshorten all urls
