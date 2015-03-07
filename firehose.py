@@ -24,7 +24,7 @@ class StreamPrinter(StreamListener):
 	def on_data(self, data):
 		try:
 			tweet = json.loads(data)
-		except:
+		except Exception as e:
 			return # invalid json
 
 		if self.data_fd is not None:
@@ -38,7 +38,7 @@ class StreamPrinter(StreamListener):
 
 		try:
 			tweetparse(tweet, src_account='', db=self.db, classifier=self.classifier, dedup=self.dedup)
-		except:
+		except Exception as e:
 			pass
 
 		return True
@@ -95,20 +95,27 @@ def main():
 	print 'active user: ', user
 	print "tracking keywords:", keywords
 
-	twitterStream = Stream(auth, StreamPrinter())
-	twitterStream.listener.src_account = user
-	twitterStream.listener.classifier = classifier
-
 	if logbase is None:
 		print "no json logs"
-		twitterStream.listener.data_fd = open('/dev/null', 'a')
+		logfd = open('/dev/null', 'a')
 	else:
-		twitterStream.listener.data_fd = open('%s.%s.json' % (logbase, time.strftime('%Y%m%d-%H%M%S')), 'a')
+		logfd = open('%s.%s.json' % (logbase, time.strftime('%Y%m%d-%H%M%S')), 'a')
 
-	try:
-		twitterStream.filter(track = keywords)
-	except:
-		twitterStream.disconnect()
+	while True:
+		try:
+			twitterStream = Stream(auth, StreamPrinter())
+			twitterStream.listener.src_account = user
+			twitterStream.listener.classifier = classifier
+			twitterStream.listener.data_fd = logfd
+
+			twitterStream.filter(track = keywords)
+		except KeyboardInterrupt:
+			twitterStream.disconnect()
+			sys.exit(0)
+		except Exception as e:
+			#print e
+			twitterStream.disconnect()
+			time.sleep(15)
 
 if __name__ == '__main__':
 	main()
