@@ -13,4 +13,5 @@ parliament_utils.py
 	- user reputation?
 	- decaying filters for short lived drama
 	- decrease reputation for retweeting old content
-	- periodically reload bayes database
+	- revisit exception handling
+	- handle rate limits, other twitter errors
