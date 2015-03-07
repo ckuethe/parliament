@@ -24,6 +24,7 @@ class myStreamListener(StreamListener):
 		self.starttime = time.strftime('%Y%m%d-%H%M%S')
 
 	def on_connect(self):
+		print "connected as", self.user
 		self.data_fd = open('parliament_log.%s.%s.json' % (self.starttime, self.user), 'a')
 
 	def on_data(self, data):
