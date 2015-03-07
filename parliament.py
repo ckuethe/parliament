@@ -54,17 +54,23 @@ def stream_thread(user, config, classifier=None):
 		print "login failed: %s" % user
 		sys.exit(0)
 
-	twitterStream = Stream(auth, myStreamListener())
-	twitterStream.listener.db = sqlite3.connect(config.get(app, 'database'))
-	twitterStream.listener.user = user
-	twitterStream.listener.classifier = classifier
 
-	twitterStream.userstream()
-	try:
-		pass
-	except:
-		twitterStream.disconnect()
-		sys.exit(0)
+	db = sqlite3.connect(config.get(app, 'database'))
+	while True:
+		try:
+			twitterStream = Stream(auth, myStreamListener())
+			twitterStream.listener.db = db
+			twitterStream.listener.user = user
+			twitterStream.listener.classifier = classifier
+			twitterStream.userstream()
+		except (KeyboardInterrupt, SystemExit):
+			twitterStream.disconnect()
+			sys.exit(0)
+		except Exception as e:
+			# print e
+			twitterStream.disconnect()
+			sleep(15)
+
 
 def bayes_thread(bayes_file, classifier=None):
 	'''watch the bayes file for changes, and reload in-memory representation'''
