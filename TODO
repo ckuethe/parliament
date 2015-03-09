@@ -15,3 +15,4 @@ parliament_utils.py
 	- decrease reputation for retweeting old content
 	- revisit exception handling
 	- handle rate limits, other twitter errors
+	- figure out why listeners suddenly start spinning... wtf
