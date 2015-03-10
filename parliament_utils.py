@@ -125,11 +125,18 @@ def tweetparse(tweet, src_account='.', db=None, classifier=None, quiet=False, db
 	u_name = sanitize(tweet['user']['name'])
 	u_descr = sanitize(tweet['user']['description'])
 
+	tags = list()
+	if len(tweet[u'entities'][u'hashtags']):
+		for tag in tweet[u'entities'][u'hashtags']:
+			tags.append('#'+sanitize(tag['text']))
+	tags = ' '.join(tags)
+
 	if rtuser:
 		rttoken = "user_%s" % rtuser
 	else:
 		rttoken = ''
-	interesting, confidence =  is_worthy("source_%s lang_%s lang_%s user_%s %s %s" % (t_src, u_lang, t_lang, u_handle, t_txt, rttoken), classifier)
+	interesting, confidence =  is_worthy("source_%s lang_%s lang_%s user_%s %s %s %s" % \
+		(t_src, u_lang, t_lang, u_handle, t_txt, rttoken, tags), classifier)
 	if (interesting * confidence) > 0.0:
 		if quiet == False:
 			if rtuser:
