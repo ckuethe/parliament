@@ -16,3 +16,4 @@ parliament_utils.py
 	- revisit exception handling
 	- handle rate limits, other twitter errors
 	- figure out why listeners suddenly start spinning... wtf
+	- ^^^^ probably should simplify the on_data handler
