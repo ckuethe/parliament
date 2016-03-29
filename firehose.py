@@ -18,6 +18,8 @@ class StreamPrinter(StreamListener):
 		self.data_fd = None
 		self.src_account = None
 		self.classifier = None
+		self.suppressor = None
+		self.badtags = None
 		self.db = None
 		self.dedup = {'None': True}
 		
@@ -35,6 +37,13 @@ class StreamPrinter(StreamListener):
 
 		if u'text' not in tweet:
 			return # not a tweet we can handle
+
+		hashtags = set(map(lambda x: x['text'].lower(), tweet['entities']['hashtags']))
+		if self.badtags.intersection(hashtags):
+			return
+
+		if self.suppressor and re.match(self.suppressor, tweet['text']):
+			return
 
 		try:
 			tweetparse(tweet, src_account='', db=self.db, classifier=self.classifier, dedup=self.dedup)
@@ -84,9 +93,20 @@ def main():
 			logbase = None
 
 	if config.has_option(app, 'keywords'):
-		keywords = config.get(app, 'keywords').replace(",", " ").split()
+		keywords = config.get(app, 'keywords').lower().replace(",", " ").split()
 	else:
 		keywords = []
+
+	if config.has_option(app, 'suppressor'):
+		suppressor = re.compile(unicode(config.get(app, 'suppressor')))
+	else:
+		suppressor = None
+
+	if config.has_option(app, 'badtags'):
+		badtags = config.get(app, 'badtags').lower().replace('#', '')
+		badtags = set( re.split('\s+', badtags) )
+	else:
+		badtags = set('')
 
 	auth = twitter_auth(app, user, config)
 	if check_login(user, auth) == False:
@@ -94,6 +114,8 @@ def main():
 
 	print 'active user: ', user
 	print "tracking keywords:", keywords
+	print "suppression regex:", suppressor.pattern if suppressor else 'None'
+	print "suppressed hashtags:", badtags
 
 	if logbase is None:
 		print "no json logs"
@@ -106,6 +128,8 @@ def main():
 			twitterStream = Stream(auth, StreamPrinter())
 			twitterStream.listener.src_account = user
 			twitterStream.listener.classifier = classifier
+			twitterStream.listener.suppressor = suppressor
+			twitterStream.listener.badtags = badtags
 			twitterStream.listener.data_fd = logfd
 
 			twitterStream.filter(track = keywords)
