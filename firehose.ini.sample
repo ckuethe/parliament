@@ -14,6 +14,9 @@ user = MyTwitterUser
 
 ; a set of terms to filter on
 keywords = @twitter @safety #twitter #trending ...
+; things to ignore
+; suppressor_regex = (?i)(this|that)(spammy|boring)thing
+; badtags = #this #that #theOther
 
 ; your API consumer key and secret
 consumer_key = XXXXXXXXXXXXXXXXXXXXX
