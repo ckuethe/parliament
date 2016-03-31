@@ -70,7 +70,7 @@ def stream_thread(user, config, classifier=None):
 		except Exception as e:
 			# print e
 			twitterStream.disconnect()
-			sleep(15)
+			time.sleep(15)
 
 
 def bayes_thread(bayes_file, classifier=None):
